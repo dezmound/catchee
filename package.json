@@ -1,0 +1,38 @@
+{
+  "name": "catchee",
+  "version": "0.0.0",
+  "description": "Catchee is a simple decorator around function or class methods in JS, that allows you to write error handler chains around an exceptionable code.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dezmound/catchee.git"
+  },
+  "keywords": [
+    "catch",
+    "js",
+    "error",
+    "handle"
+  ],
+  "author": "dezmound",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dezmound/catchee/issues"
+  },
+  "homepage": "https://github.com/dezmound/catchee#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
+    "eslint": "^7.2.0",
+    "husky": "^4.2.5",
+    "typescript": "^3.9.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  }
+}
