@@ -4,9 +4,10 @@
   "description": "Catchee is a simple decorator around function or class methods in JS, that allows you to write error handler chains around an exceptionable code.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "lint": "eslint .",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",
