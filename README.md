@@ -45,10 +45,10 @@ const wrappedFetch = AsyncCatchee(fetchData).catch(HttpError, () => {
   return JSON.parse(localStorage.getItem('books') || '[]');
 })
 .finally(() => {
-  
+  console.log('Books were loaded');
 });
 
-const books = wrappedFunction();
+const books = await wrappedFunction();
 
 
 ```
