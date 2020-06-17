@@ -16,8 +16,10 @@ export function Catchee(originalFunction, context = null) {
     let result: any | Promise<unknown> = undefined;
 
     function matchCatchHandler(error) {
-      for (const { type, handler } of catchHandlers) {
-        if (type && !(error instanceof type)) {
+      for (const { types, handler } of catchHandlers) {
+        if (types && !(error instanceof types)) {
+          continue;
+        } else if (Array.isArray(types) && !types.some((type) => error instanceof type)) {
           continue;
         }
 
@@ -68,12 +70,12 @@ export function Catchee(originalFunction, context = null) {
     return result;
   }
 
-  wrapper.catch = (typeOrLocalHandler, localHandler = null) => {
-    const errorType = localHandler ? typeOrLocalHandler : null;
+  wrapper.catch = (typesOrLocalHandler, localHandler = null) => {
+    const errorTypes = localHandler ? typesOrLocalHandler : null;
 
     catchHandlers.push({
-      type: errorType,
-      handler: localHandler || typeOrLocalHandler,
+      types: errorTypes,
+      handler: localHandler || typesOrLocalHandler,
     });
 
     return wrapper;
