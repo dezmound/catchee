@@ -1,3 +1,93 @@
+import isPromise from 'is-promise';
+
+/**
+ * Create wrap around originalFunction with methods like 'catch'
+ * or 'finally'. This methods add's error handlers to original function.
+ * @param {Function} originalFunction
+ * @param {any} context
+ * 
+ * @returns {any} originalFunction, catch handler, or finally return value
+ */
+export function Catchee(originalFunction, context = null) {
+  const catchHandlers = [];
+  let finallyHandler = null;
+  function wrapper(...args) {
+    let isHandled = false;
+    let result: any | Promise<unknown> = undefined;
+
+    function matchCatchHandler(error) {
+      for (const { type, handler } of catchHandlers) {
+        if (type && !(error instanceof type)) {
+          continue;
+        }
+
+        if (typeof handler === 'function') {
+          result = handler.apply(context || originalFunction, [error, ...args]);
+        }
+
+        isHandled = true;
+        break;
+      }
+    }
+
+    try {
+      result = originalFunction.apply(context || originalFunction, args);
+
+      if (isPromise(result) || result.catch) {
+        result = result
+          .then((data) => {
+            result = data;
+          })
+          .catch((error) => {
+            matchCatchHandler(error);
+
+            if (!isHandled) {
+              throw error;
+            }
+          })
+          .then(() => {
+            if (finallyHandler) {
+              result = finallyHandler.apply(context || originalFunction, args);
+            }
+
+            return result;
+          });
+      }
+    } catch(error) {
+      matchCatchHandler(error);
+
+      if (!isHandled) {
+        throw error;
+      }
+    } finally {
+      if (typeof finallyHandler === 'function') {
+        result = finallyHandler.apply(context || originalFunction, args);
+      }
+    }
+
+    return result;
+  }
+
+  wrapper.catch = (typeOrLocalHandler, localHandler = null) => {
+    const errorType = localHandler ? typeOrLocalHandler : null;
+
+    catchHandlers.push({
+      type: errorType,
+      handler: localHandler || typeOrLocalHandler,
+    });
+
+    return wrapper;
+  };
+
+  wrapper.finally = (handler) => {
+    finallyHandler = handler;
+
+    return wrapper;
+  };
+
+  return wrapper;
+}
+
 /**
  * Error handler decorator
  * @param {Error|Function} typeOrLocalHandler class of Error or localHandler
@@ -38,7 +128,7 @@
  * }
  *
  */
-function Catch(typeOrLocalHandler, localOrFinallyHandler, finallyHandler) {
+export function Catch(typeOrLocalHandler, localOrFinallyHandler, finallyHandler) {
   // eslint-disable-next-line no-prototype-builtins
   const errorType = Error.isPrototypeOf(typeOrLocalHandler) ? typeOrLocalHandler : null;
   const localHandler = errorType ? localOrFinallyHandler : typeOrLocalHandler;

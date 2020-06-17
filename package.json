@@ -4,10 +4,11 @@
   "description": "Catchee is a simple decorator around function or class methods in JS, that allows you to write error handler chains around an exceptionable code.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "mocha tests",
     "lint": "eslint .",
     "build": "tsc",
-    "prepublish": "npm run test && npm run build"
+    "prepublish": "npm run test && npm run build",
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
@@ -29,12 +30,18 @@
     "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.3.0",
     "eslint": "^7.2.0",
+    "eslint-plugin-mocha": "^7.0.1",
     "husky": "^4.2.5",
+    "mocha": "^8.0.1",
+    "standard-version": "^8.0.0",
     "typescript": "^3.9.5"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint"
     }
+  },
+  "dependencies": {
+    "is-promise": "^4.0.0"
   }
 }
