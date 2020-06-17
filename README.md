@@ -30,7 +30,7 @@ You can use it for more complex cases:
 
 ```javascript
 
-import { AsyncCatchee } from 'catchee';
+import { Catchee } from 'catchee';
 
 class HttpError extends Error {}
 
@@ -40,7 +40,7 @@ const fetchData = async () => {
   return booksList;
 };
 
-const wrappedFetch = AsyncCatchee(fetchData).catch(HttpError, () => {
+const wrappedFetch = Catchee(fetchData).catch(HttpError, () => {
   console.warn('Couldn\'t get books list via API, get it from local storage...');
   return JSON.parse(localStorage.getItem('books') || '[]');
 })
