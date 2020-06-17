@@ -17,7 +17,7 @@ export function Catchee(originalFunction, context = null) {
 
     function matchCatchHandler(error) {
       for (const { types, handler } of catchHandlers) {
-        if (types && !(error instanceof types)) {
+        if (!Array.isArray(types) && types && !(error instanceof types)) {
           continue;
         } else if (Array.isArray(types) && !types.some((type) => error instanceof type)) {
           continue;
