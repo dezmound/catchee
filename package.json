@@ -1,10 +1,10 @@
 {
   "name": "catchee",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Catchee is a simple decorator around function or class methods in JS, that allows you to write error handler chains around an exceptionable code.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "mocha tests",
+    "test": "ts-mocha tests/*.ts",
     "lint": "eslint .",
     "build": "tsc",
     "prepublish": "npm run test && npm run build",
@@ -27,13 +27,16 @@
   },
   "homepage": "https://github.com/dezmound/catchee#readme",
   "devDependencies": {
+    "@types/expect": "^24.3.0",
+    "@types/mocha": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.3.0",
     "eslint": "^7.2.0",
     "eslint-plugin-mocha": "^7.0.1",
     "husky": "^4.2.5",
-    "mocha": "^8.0.1",
+    "mocha": "^8.2.1",
     "standard-version": "^8.0.0",
+    "ts-mocha": "^8.0.0",
     "typescript": "^3.9.5"
   },
   "husky": {
@@ -42,6 +45,7 @@
     }
   },
   "dependencies": {
-    "is-promise": "^4.0.0"
+    "is-promise": "^4.0.0",
+    "ts-error": "^1.0.6"
   }
 }
