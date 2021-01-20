@@ -1,14 +1,23 @@
 import isPromise from 'is-promise';
 
+function isClass(v) {
+  try {
+    new v();
+    return true;
+  } catch(e) {
+    return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+  }
+}
+
 /**
  * Create wrap around originalFunction with methods like 'catch'
  * or 'finally'. This methods add's error handlers to original function.
  * @param {Function} originalFunction
  * @param {any} context
  * 
- * @returns {any} originalFunction, catch handler, or finally return value
+ * @returns {any} originalFunction, catch handler return value
  */
-export function Catchee(originalFunction, context = null) {
+export function Catchee(originalFunction: (...args: any) => any, context = null): any {
   const catchHandlers = [];
   let finallyHandler = null;
   function wrapper(...args) {
@@ -49,7 +58,7 @@ export function Catchee(originalFunction, context = null) {
           })
           .then(() => {
             if (finallyHandler) {
-              result = finallyHandler.apply(context || originalFunction, args);
+              finallyHandler.apply(context || originalFunction, args);
             }
 
             return result;
@@ -130,33 +139,67 @@ export function Catchee(originalFunction, context = null) {
  * }
  *
  */
-export function Catch(typeOrLocalHandler, localOrFinallyHandler, finallyHandler) {
+export function Catch(
+  typeOrLocalHandler: (Error | ((...args: any) => any) | string | (new () => any)),
+  localOrFinallyHandler?: (((...args: any) => any) | string),
+  finallyHandler?: (((...args: any) => any) | string),
+): any {
   // eslint-disable-next-line no-prototype-builtins
-  const errorType = Error.isPrototypeOf(typeOrLocalHandler) ? typeOrLocalHandler : null;
-  const localHandler = errorType ? localOrFinallyHandler : typeOrLocalHandler;
+  const errorType = Error.isPrototypeOf(typeOrLocalHandler) || isClass(typeOrLocalHandler) ? typeOrLocalHandler : null;
+  let localHandler = errorType ? localOrFinallyHandler : typeOrLocalHandler;
   finallyHandler = errorType ? finallyHandler : localOrFinallyHandler;
   
   return function wrapper(target, key, descriptor) {
     const originalMethod = descriptor.value;
+
+    if (typeof localHandler === 'string') {
+      const methodName = localHandler as string;
+
+      localHandler = target[methodName].bind(target);
+    }
+
+    if (typeof finallyHandler === 'string') {
+      const methodName = finallyHandler as string;
+
+      finallyHandler = target[methodName].bind(target);
+    }
   
-    async function wrappedMethod(...args) {
+    function wrappedMethod(...args) {
       let result;
-  
-      try {
-        result = await originalMethod.apply(this, args);
-      } catch (error) {
-        if (errorType && !(error instanceof errorType)) {
+
+      const handleError = (error) => {
+        if (errorType && !(error instanceof (errorType as any))) {
           throw error;
         } else if (localHandler) {
-          result = await localHandler.call(null, error, this, ...args);
+          result = (localHandler as any).call(null, error, this, ...args);
   
           if (result) {
             return result;
           }
         }
-      } finally {
+      };
+
+      const finallyAction = () => {
         if (finallyHandler) {
-          result = await finallyHandler.call(null, this, ...args);
+          (finallyHandler as any).call(null, this, ...args);
+        }
+      };
+  
+      try {
+        result = originalMethod.apply(this, args);
+
+        if (isPromise(result) && (result as any).catch) {
+          result = (result as any).catch(handleError);
+
+          if ((result as any).finally) {
+            result = (result as any).finally(finallyAction);
+          }
+        }
+      } catch (error) {
+        handleError(error);
+      } finally {
+        if (!result || (result && !(result as any).finally)) {
+          finallyAction();
         }
       }
   
@@ -172,6 +215,6 @@ export function Catch(typeOrLocalHandler, localOrFinallyHandler, finallyHandler)
     return descriptor;
   };
 }
-  
+
 export default Catch;
   

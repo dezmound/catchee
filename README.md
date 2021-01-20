@@ -52,3 +52,37 @@ const books = await wrappedFunction();
 
 
 ```
+
+### Class method handling
+
+```javascript
+class MethodError extends ExtendableError {}
+
+let err = null;
+let test = null;
+
+class TestClass {
+  @Catch(MethodError, 'methodErrorHandler', 'finallyHandler')
+  method() {
+    err = new MethodError();
+    throw err;
+  }
+  @Catch('methodErrorHandler', 'finallyHandler')
+  async method2() {
+    err = new Error();
+    throw err;
+  }
+  methodErrorHandler(error: MethodError | Error) {
+    return 'ok';
+  }
+  finallyHandler() {
+    test = 'test';
+  }
+}
+
+const instance = new TestClass();
+
+assert.equal(instance.method(), 'ok');
+assert.equal(await instance.method2(), 'ok');
+assert.equal(test, 'test');
+```

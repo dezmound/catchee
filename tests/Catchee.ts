@@ -1,12 +1,13 @@
-const { Catchee, AsyncCatchee } = require('../dist');
-const assert = require('assert');
+import { Catchee, Catch } from '../src';
+import * as assert from 'assert';
+import { ExtendableError } from 'ts-error';
 
 describe('Catchee API', function() {
-  describe('#catch', function() {
+  describe('#Catchee', function() {
     it('should catch single error', function() {
       const testFunction = (a, b) => {
         if (a < b) {
-          throw new Error('A less than B :(');
+          throw new ExtendableError('A less than B :(');
         }
       };
 
@@ -18,7 +19,7 @@ describe('Catchee API', function() {
     });
 
     it('should catch specific error', function() {
-      class CustomError extends Error {}
+      class CustomError extends ExtendableError {}
 
       const testFunction = () => {
         throw new CustomError('Oh, no. Something went wrong! :(');
@@ -32,8 +33,8 @@ describe('Catchee API', function() {
     });
 
     it('shouldn\'t catch custom error', function() {
-      class CustomError extends Error {}
-      class RuntimeError extends Error {}
+      class CustomError extends ExtendableError {}
+      class RuntimeError extends ExtendableError {}
 
       const testFunction = () => {
         throw new CustomError('Oh, no. Something went wrong! :(');
@@ -51,7 +52,7 @@ describe('Catchee API', function() {
 
     it('should return finally result', function() {
       const testFunction = () => {
-        throw new Error('Oh, no. Something went wrong! :(');
+        throw new ExtendableError('Oh, no. Something went wrong! :(');
       };
 
       const wrappedFunction = Catchee(testFunction)
@@ -79,7 +80,7 @@ describe('Catchee API', function() {
 
     it('shouldn\'t throw exception', function() {
       const testFunction = () => {
-        throw new Error('Oh, no. Something went wrong! :(');
+        throw new ExtendableError('Oh, no. Something went wrong! :(');
       };
 
       const wrappedFunction = Catchee(testFunction).catch(Error, () => {
@@ -92,7 +93,7 @@ describe('Catchee API', function() {
     it('should return correct calculations', function() {
       const testFunction = (a, b) => {
         if (a < b) {
-          throw new Error('A less than B :(');
+          throw new ExtendableError('A less than B :(');
         }
       };
 
@@ -110,7 +111,7 @@ describe('Catchee API', function() {
             resolve(a + b);
           });
 
-          throw new Error('test');
+          throw new ExtendableError('test');
         });
       };
 
@@ -121,6 +122,70 @@ describe('Catchee API', function() {
       return wrappedFunction(1, 2).then((result) => {
         assert.equal(result, 3);
       });
+    });
+  });
+  describe('#Catch', function () {
+    it('should catch class error through method name', async function() {
+      class MethodError extends ExtendableError {}
+
+      let err = null;
+
+      class TestClass {
+        @Catch(MethodError, 'methodErrorHandler')
+        async method() {
+          await new Promise((resolve, reject) => {
+            err = new MethodError();
+            reject(err);
+          });
+        }
+        methodErrorHandler(error: MethodError) {
+          assert.throws(
+            () => {
+              throw error;
+            },
+            err,
+            'Catched error mismatch type of original exception'
+          );
+
+          return 'test';
+        }
+      }
+
+      const instance = new TestClass();
+
+      assert.equal(await instance.method(), 'test');
+
+    });
+    it('should exec finally method', async function() {
+      class MethodError extends ExtendableError {}
+
+      let err = null;
+      let test = null;
+
+      class TestClass {
+        @Catch(MethodError, 'methodErrorHandler', 'finallyHandler')
+        method() {
+          err = new MethodError();
+          throw err;
+        }
+        @Catch('methodErrorHandler', 'finallyHandler')
+        async method2() {
+          err = new Error();
+          throw err;
+        }
+        methodErrorHandler(error: MethodError | Error) {
+          return 'ok';
+        }
+        finallyHandler() {
+          test = 'test';
+        }
+      }
+
+      const instance = new TestClass();
+
+      assert.equal(instance.method(), 'ok');
+      assert.equal(await instance.method2(), 'ok');
+      assert.equal(test, 'test');
     });
   });
 });

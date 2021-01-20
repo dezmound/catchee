@@ -1,12 +1,16 @@
 {
   "include": [
-      "src/**/*"
+      "src/**/*",
+      "tests/*"
   ],
   "compilerOptions": {
     "outDir": "./dist",
+    "rootDir": "./",
     "lib": [
       "ES2015",
       "DOM"
-    ]
-  }
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
 }
