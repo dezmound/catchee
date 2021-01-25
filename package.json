@@ -35,7 +35,7 @@
     "eslint-plugin-mocha": "^7.0.1",
     "husky": "^4.2.5",
     "mocha": "^8.2.1",
-    "standard-version": "^8.0.0",
+    "standard-version": "^9.1.0",
     "ts-mocha": "^8.0.0",
     "typescript": "^3.9.5"
   },
