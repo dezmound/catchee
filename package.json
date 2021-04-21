@@ -1,6 +1,6 @@
 {
   "name": "catchee",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Catchee is a simple decorator around function or class methods in JS, that allows you to write error handler chains around an exceptionable code.",
   "main": "dist/src/index.js",
   "scripts": {
